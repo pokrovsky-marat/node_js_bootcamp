@@ -11,7 +11,7 @@ router.param('id', tourController.checkId)
 
 
 
-router.route("/").get(tourController.getTours).post(tourController.createTour);
+router.route("/").get(tourController.getTours).post(tourController.checkBodyTour,tourController.createTour);
 router.route('/:id').patch(tourController.updateTour).delete(tourController.deleteTour).get(tourController.getTour);
 
 module.exports = router;
