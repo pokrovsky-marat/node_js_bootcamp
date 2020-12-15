@@ -25,12 +25,11 @@ const getTours = (req, res) => {
         .json({status: "success", results: tours.length, data: {tours}});
 }
 const getTour = (req, res) => {
-
-    // let tour = tours.find((el) => {
-    //     return el.id == id; //id is a string === is not equal
-    // });
-    // res.status(200).json({status: "success", time: req.requestedTime, data: {tour}});
-
+    console.log(req.body)
+    let tour = tours.find((el) => {
+        return el.id == id; //id is a string === is not equal
+    });
+    res.status(200).json({status: "success", time: req.requestedTime, data: {tour}});
 }
 
 const createTour = (req, res) => {

@@ -7,11 +7,11 @@ const router = express.Router();
     console.log(`tourRouter line 7, id = ${val}`);
     next();
 })*/
-router.param('id',tourController.checkId)
+router.param('id', tourController.checkId)
+
 
 
 router.route("/").get(tourController.getTours).post(tourController.createTour);
 router.route('/:id').patch(tourController.updateTour).delete(tourController.deleteTour).get(tourController.getTour);
-
 
 module.exports = router;
