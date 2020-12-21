@@ -39,6 +39,15 @@ exports.getTours = async (req, res) => {
     } else {
       query = query.select("-__v"); // "-" Minus sign means exclude this field
     }
+    //4.)Pagination--------------------------------
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip > numTours) throw new Error("This page does not exist");
+    }
 
     let tours = await query;
     res
@@ -47,7 +56,7 @@ exports.getTours = async (req, res) => {
   } catch (error) {
     res.status(404).json({
       status: "fail",
-      message: "Not Found",
+      message: error.message,
     });
   }
 };
