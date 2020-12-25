@@ -7,6 +7,7 @@ const tourSchema = mongoose.Schema(
       trim: true,
       unique: true,
     },
+    secretTour: { type: Boolean, default: false },
     ratingsAverage: { type: Number, default: 4.5 },
     price: { type: Number, required: [true, "A tour must have a price"] },
     duration: { type: Number, required: [true, "A tour must have a duration"] },
@@ -44,7 +45,7 @@ tourSchema.virtual("durationWeeks").get(function () {
 });
 //Document Middleware: runs before .save() and .create()
 tourSchema.pre("save", function (next) {
-  this.name = this.name.toLowerCase();
+  // this.name = this.name.toLowerCase();
   next();
 });
 tourSchema.pre("save", function (next) {
@@ -53,8 +54,20 @@ tourSchema.pre("save", function (next) {
 });
 //Document Middleware: runs after .save() and .create()
 tourSchema.post("save", function (doc, next) {
-  console.log(doc);
+  // console.log(doc);
   next();
 });
+//Query Middleware
+tourSchema.pre(/^find/, function (next) {
+  console.log("Query Middleware--");
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
+});
+tourSchema.post(/^find/, function (docs, next) {
+  console.log(`------ Query takes ${Date.now() - this.start} ms.   `);
+  next();
+});
+
 const Tour = mongoose.model("Tour", tourSchema);
 module.exports = Tour;
