@@ -38,10 +38,23 @@ const tourSchema = mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-
+//Virtual properties
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
-
+//Document Middleware: runs before .save() and .create()
+tourSchema.pre("save", function (next) {
+  this.name = this.name.toLowerCase();
+  next();
+});
+tourSchema.pre("save", function (next) {
+  console.log("This is document middleware");
+  next();
+});
+//Document Middleware: runs after .save() and .create()
+tourSchema.post("save", function (doc, next) {
+  console.log(doc);
+  next();
+});
 const Tour = mongoose.model("Tour", tourSchema);
 module.exports = Tour;
