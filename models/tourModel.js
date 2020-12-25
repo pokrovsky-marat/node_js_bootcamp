@@ -68,6 +68,12 @@ tourSchema.post(/^find/, function (docs, next) {
   console.log(`------ Query takes ${Date.now() - this.start} ms.   `);
   next();
 });
+//Aggregation  Middleware
+tourSchema.pre("aggregate", function (next) {
+  console.log("---------------------------");
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 
+  next();
+});
 const Tour = mongoose.model("Tour", tourSchema);
 module.exports = Tour;
