@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require("bcryptjs");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -28,13 +29,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: [true, "A user must have a password"],
+    minLength: [8, "A password must have  more or equal than 8 characters"],
   },
   passwordConfirm: {
     type: String,
     trim: true,
     required: [true, "A user must have a password"],
+    validate: {
+      //!!!This only works for save, not for update
+      validator: function (value) {
+        return value === this.password;
+      },
+      message: "Confirmed password must be the same as password",
+    },
   },
 });
-
+userSchema.pre("save", function (next) {
+  // if we can't changed password field, quit from function
+  if (!this.isModified("password")) {
+    return next();
+  }
+  bcrypt.hash(this.password, 12, (err, hash) => {
+    this.password = hash;
+    this.passwordConfirm = undefined;
+    next();
+  });
+  //Dont store passwordConfirm field in Database, it only was nedeed for validation
+});
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
