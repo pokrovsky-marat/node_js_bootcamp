@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const tourSchema = mongoose.Schema(
+const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -97,5 +97,5 @@ tourSchema.pre("aggregate", function (next) {
 
   next();
 });
-const Tour = mongoose.model("Tour", tourSchema);
+const Tour = new mongoose.model("Tour", tourSchema);
 module.exports = Tour;

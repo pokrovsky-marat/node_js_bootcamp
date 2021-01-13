@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const Tour = require("./../models/tourModel");
 const ApiFeatures = require("./../utils/ApiFeatures");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
@@ -7,7 +8,7 @@ exports.topCheapTours = (req, res, next) => {
   next();
 };
 
-exports.getTours = cathAsyncErrors(async (req, res) => {
+exports.getTours = cathAsyncErrors(async (req, res, next) => {
   let features = new ApiFeatures(Tour.find(), req.query);
   features.filter().sort().select().paginate();
   let tours = await features.query;
@@ -16,12 +17,17 @@ exports.getTours = cathAsyncErrors(async (req, res) => {
     .json({ status: "success", results: tours.length, data: { tours } });
 });
 
-exports.getTour = cathAsyncErrors(async (req, res) => {
+exports.getTour = cathAsyncErrors(async (req, res, next) => {
   let tour = await Tour.findById(req.params.id);
+  if (!tour) {
+    return next(
+      new AppError(`No tour found with such ID <${req.params.id}>`, 404)
+    );
+  }
   res.status(200).json({ status: "success", data: { tour } });
 });
 
-exports.createTour = cathAsyncErrors(async (req, res) => {
+exports.createTour = cathAsyncErrors(async (req, res, next) => {
   const newTour = await Tour.create(req.body);
   res.status(201).json({
     status: "success",
@@ -29,22 +35,32 @@ exports.createTour = cathAsyncErrors(async (req, res) => {
   });
 });
 
-exports.updateTour = cathAsyncErrors(async (req, res) => {
+exports.updateTour = cathAsyncErrors(async (req, res, next) => {
   let tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
+  if (!tour) {
+    return next(
+      new AppError(`No tour found with such ID <${req.params.id}>`, 404)
+    );
+  }
   res.status(200).json({ status: "success", data: { tour } });
 });
 
-exports.deleteTour = cathAsyncErrors(async (req, res) => {
-  await Tour.findByIdAndDelete(req.params.id);
+exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
+  let tour = await Tour.findByIdAndDelete(req.params.id);
+  if (!tour) {
+    return next(
+      new AppError(`No tour found with such ID <${req.params.id}>`, 404)
+    );
+  }
   res.status(204).json({
     status: "success",
   });
 });
 
-exports.getTourStats = cathAsyncErrors(async (req, res) => {
+exports.getTourStats = cathAsyncErrors(async (req, res, next) => {
   const stats = await Tour.aggregate([
     {
       $match: { ratingsAverage: { $gte: 4.5 } },
@@ -67,7 +83,7 @@ exports.getTourStats = cathAsyncErrors(async (req, res) => {
   res.status(200).json({ status: "success", data: { stats } });
 });
 
-exports.getMonthlyPlan = cathAsyncErrors(async (req, res) => {
+exports.getMonthlyPlan = cathAsyncErrors(async (req, res, next) => {
   const year = req.params.year;
   console.log(year);
   const stats = await Tour.aggregate([
