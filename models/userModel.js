@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
+  role: {
+    type: String,
+    enum: ["user", "guide", "lead", "admin"],
+    default: 'user',
+  },
 });
 userSchema.pre("save", function (next) {
   // if we can't changed password field, quit from function
