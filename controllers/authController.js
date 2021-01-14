@@ -1,3 +1,4 @@
+const util = require("util");
 const User = require("./../models/userModel");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
 const jwt = require("jsonwebtoken");
@@ -52,6 +53,20 @@ exports.protect = cathAsyncErrors(async (req, res, next) => {
       new AppError("You're not logged in, please log in and try again", 401)
     );
   }
-    //2.)Verification token
+  //2.)Verification token
+  let decoded = await util.promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  //3.)Check if user still exist
+  let freshUser = await User.findById(decoded.id);
+  if (!freshUser) {
+    return next(
+      new AppError("User with this token does not longer exist", 401)
+    );
+  }
+  //4.)Check if user changed his password after token was signed
+  if (freshUser.changedPassword(decoded.iat)) {
+    return next(
+      new AppError("User recently changed password. Please log in again", 401)
+    );
+  }
   next();
 });

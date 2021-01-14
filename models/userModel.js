@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema({
       message: "Confirmed password must be the same as password",
     },
   },
+  passwordChangedAt: Date,
 });
 userSchema.pre("save", function (next) {
   // if we can't changed password field, quit from function
@@ -58,7 +59,18 @@ userSchema.pre("save", function (next) {
   //Dont store passwordConfirm field in Database, it only was nedeed for validation
 });
 userSchema.methods.checkPassword = (myPlaintextPassword, hash) => {
- return bcrypt.compare(myPlaintextPassword, hash).then((res) => res);
+  return bcrypt.compare(myPlaintextPassword, hash).then((res) => res);
 };
+userSchema.methods.changedPassword = function (JWTTimeStamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimeStamp < changedTimestamp;
+  }
+  return false;
+};
+
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
