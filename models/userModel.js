@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     required: [true, "A user must have a password"],
     minLength: [8, "A password must have  more or equal than 8 characters"],
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -56,5 +57,8 @@ userSchema.pre("save", function (next) {
   });
   //Dont store passwordConfirm field in Database, it only was nedeed for validation
 });
+userSchema.methods.checkPassword = (myPlaintextPassword, hash) => {
+ return bcrypt.compare(myPlaintextPassword, hash).then((res) => res);
+};
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
