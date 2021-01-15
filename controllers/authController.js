@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const util = require("util");
 const User = require("./../models/userModel");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
@@ -127,4 +128,31 @@ exports.forgotPassword = cathAsyncErrors(async (req, res, next) => {
     );
   }
 });
-exports.resetPassword = cathAsyncErrors(async (req, res, next) => {});
+exports.resetPassword = cathAsyncErrors(async (req, res, next) => {
+  //1)Get token and check, if user exist and token didn't expire
+  let hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+  let user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  if (!user) {
+    return next(new AppError("Token is invalid or expired", 400));
+  }
+  //2)Update password, set changedPasswordAt, reset reset temp fields and save
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordChangedAt = Date.now() - 10000; //-10s to be sure that password changed before token was signed
+
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+  const token = makeToken(user._id);
+  res.status(200).json({
+    status: "success",
+    token,
+  });
+});
