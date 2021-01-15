@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -48,8 +49,10 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["user", "guide", "lead", "admin"],
-    default: 'user',
+    default: "user",
   },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 userSchema.pre("save", function (next) {
   // if we can't changed password field, quit from function
@@ -76,6 +79,15 @@ userSchema.methods.changedPassword = function (JWTTimeStamp) {
   }
   return false;
 };
-
+userSchema.methods.createPasswordResetToken = function () {
+  let token = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+  this.passwordResetExpires = Date.now() + 1000 * 60 * 10;
+  console.log(token, this.passwordResetToken, this.passwordResetExpires);
+  return token;
+};
 const User = new mongoose.model("User", userSchema);
 module.exports = User;

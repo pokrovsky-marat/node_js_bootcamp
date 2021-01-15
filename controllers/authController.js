@@ -68,16 +68,37 @@ exports.protect = cathAsyncErrors(async (req, res, next) => {
       new AppError("User recently changed password. Please log in again", 401)
     );
   }
-  req.user = freshUser;//Pass to next middleware to check his roles
+  req.user = freshUser; //Pass to next middleware to check his roles
   next();
 });
-exports.restrictTo=(...roles)=>{
-  return (req,res,next)=>{
-    if(!roles.includes(req.user.role)){
-      return next(
-        new AppError("Only leads and admins can delete tours", 403)
-      );
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError("Only leads and admins can delete tours", 403));
     }
-    next()
+    next();
+  };
+};
+exports.signup = cathAsyncErrors(async (req, res, next) => {
+  const newUser = await User.create(req.body);
+  const token = makeToken(newUser._id);
+  res.status(201).json({
+    status: "success",
+    token,
+    data: {
+      user: newUser,
+    },
+  });
+});
+exports.forgotPassword = cathAsyncErrors(async (req, res, next) => {
+  //1) Check if user exist
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError("No users with that email", 404));
   }
-}
+  //2) Generate token and sent it to user
+  user.createPasswordResetToken();
+  user.save({validateBeforeSave:false})
+  res.send("ok");
+});
+exports.resetPassword = cathAsyncErrors(async (req, res, next) => {});
