@@ -1,27 +1,52 @@
-const getAllUsers = (req, res) => {
-    res
-        .status(500)
-        .json({status: "error", message: "This route has not yet defined"});
-}
-const getUser = (req, res) => {
-    res
-        .status(500)
-        .json({status: "error", message: "This route has not yet defined"});
-}
-const createUser = (req, res) => {
-    res
-        .status(500)
-        .json({status: "error", message: "This route has not yet defined"});
-}
-const updateUser = (req, res) => {
-    res
-        .status(500)
-        .json({status: "error", message: "This route has not yet defined"});
-}
-const deleteUser = (req, res) => {
-    res
-        .status(500)
-        .json({status: "error", message: "This route has not yet defined"});
-}
+const AppError = require("./../utils/AppError");
+const User = require("./../models/userModel");
+const cathAsyncErrors = require("./../utils/cathAsyncErrors");
 
-module.exports = {getAllUsers, getUser, createUser, updateUser, deleteUser}
+exports.getAllUsers = cathAsyncErrors(async (req, res, next) => {
+  const users = await User.find();
+  res.status(200).json({
+    status: "success",
+    results: users.length,
+    data: {
+      users,
+    },
+  });
+});
+exports.updateMe = cathAsyncErrors(async (req, res, next) => {
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(new AppError("This is not for password updates", 400));
+  }
+  //We use .findByIdAndUpdate() instead .save(), because of validators for password required field
+  //It's not secure because user can add 'role:admin' to 'req.body',
+  //and also we need to require password before changing users information
+  let user = await User.findByIdAndUpdate(req.user.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
+});
+exports.getUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: "error", message: "This route has not yet defined" });
+};
+exports.createUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: "error", message: "This route has not yet defined" });
+};
+exports.updateUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: "error", message: "This route has not yet defined" });
+};
+exports.deleteUser = (req, res) => {
+  res
+    .status(500)
+    .json({ status: "error", message: "This route has not yet defined" });
+};
