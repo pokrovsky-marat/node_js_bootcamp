@@ -83,7 +83,7 @@ exports.restrictTo = (...roles) => {
   };
 };
 exports.signup = cathAsyncErrors(async (req, res, next) => {
-  const newUser = await User.create(req.body);
+  const newUser = await User.create(req.body); //It's not secure, everybody can become admin just sending {role:'admin'}
   const token = makeToken(newUser._id);
   res.status(201).json({
     status: "success",
@@ -150,6 +150,30 @@ exports.resetPassword = cathAsyncErrors(async (req, res, next) => {
   user.passwordResetExpires = undefined;
 
   await user.save();
+  const token = makeToken(user._id);
+  res.status(200).json({
+    status: "success",
+    token,
+  });
+});
+exports.updatePassword = cathAsyncErrors(async (req, res, next) => {
+  const { email, password, newPassword, newPasswordConfirm } = req.body;
+  //check if email&password exist
+  if (!email || !password) {
+    return next(new AppError("Please provide email & password", 400));
+  }
+  //Check if user exist && password is correct
+  const user = await User.findOne({ email }).select("+password");
+
+  if (!user || !(await user.checkPassword(password, user.password))) {
+    return next(new AppError("Incorrect email & password", 401));
+  }
+  //Update user's password
+  user.password = newPassword;
+  user.passwordConfirm = newPasswordConfirm;
+  user.passwordChangedAt = Date.now() - 10000;
+  await user.save();
+  //Make Token
   const token = makeToken(user._id);
   res.status(200).json({
     status: "success",
