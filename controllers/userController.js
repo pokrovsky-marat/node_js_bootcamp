@@ -30,6 +30,14 @@ exports.updateMe = cathAsyncErrors(async (req, res, next) => {
     },
   });
 });
+
+exports.deleteMe = cathAsyncErrors(async (req, res, next) => {
+  let user = await User.findByIdAndUpdate(req.user.id, { active: false });
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
+});
 exports.getUser = (req, res) => {
   res
     .status(500)

@@ -53,6 +53,11 @@ const userSchema = new mongoose.Schema({
   },
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 userSchema.pre("save", function (next) {
   // if we can't changed password field, quit from function
@@ -89,5 +94,10 @@ userSchema.methods.createPasswordResetToken = function () {
   console.log(token, this.passwordResetToken, this.passwordResetExpires);
   return token;
 };
+//Query Middleware
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
 const User = new mongoose.model("User", userSchema);
 module.exports = User;
