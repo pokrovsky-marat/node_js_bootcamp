@@ -6,6 +6,8 @@ const AppError = require("./utils/AppError");
 const globalErrorController = require("./controllers/globalErrorController");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
+const xss = require("xss-clean");
+const mongoSanitize = require("express-mongo-sanitize");
 const app = express();
 
 //Global Middleware
@@ -24,6 +26,10 @@ if (process.env.NODE_ENV === "development") {
 }
 //Body parser, reading data from data to req.body
 app.use(express.json({ limit: "10kb" })); //Limit body size
+//Sanitize against NoSQL query injections
+app.use(mongoSanitize());
+//Sanitize against XSS 
+app.use(xss());
 //Serving static files
 app.use(express.static("./public/"));
 
