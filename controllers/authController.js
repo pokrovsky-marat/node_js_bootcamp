@@ -12,17 +12,22 @@ const makeToken = (id) => {
   });
 };
 
-exports.signup = cathAsyncErrors(async (req, res, next) => {
-  const newUser = await User.create(req.body);
-  const token = makeToken(newUser._id);
-  res.status(201).json({
+const makeTokenAndSend = (user, res, statusCode) => {
+  const token = makeToken(user._id);
+  res.status(statusCode).json({
     status: "success",
     token,
     data: {
-      user: newUser,
+      user,
     },
   });
+};
+
+exports.signup = cathAsyncErrors(async (req, res, next) => {
+  const newUser = await User.create(req.body);
+  makeTokenAndSend(newUser, res, 201);
 });
+
 exports.login = cathAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
   //check if email&password exist
@@ -36,12 +41,9 @@ exports.login = cathAsyncErrors(async (req, res, next) => {
     return next(new AppError("Incorrect email & password", 401));
   }
   //Make Token
-  const token = makeToken(user._id);
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  makeTokenAndSend(user, res, 200);
 });
+
 exports.protect = cathAsyncErrors(async (req, res, next) => {
   //1.)Check if token exist
   let token;
@@ -74,6 +76,7 @@ exports.protect = cathAsyncErrors(async (req, res, next) => {
   req.user = freshUser; //Pass to next middleware to check his roles
   next();
 });
+
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -82,17 +85,7 @@ exports.restrictTo = (...roles) => {
     next();
   };
 };
-exports.signup = cathAsyncErrors(async (req, res, next) => {
-  const newUser = await User.create(req.body); //It's not secure, everybody can become admin just sending {role:'admin'}
-  const token = makeToken(newUser._id);
-  res.status(201).json({
-    status: "success",
-    token,
-    data: {
-      user: newUser,
-    },
-  });
-});
+
 exports.forgotPassword = cathAsyncErrors(async (req, res, next) => {
   //1) Check if user exist
   const user = await User.findOne({ email: req.body.email });
@@ -150,11 +143,7 @@ exports.resetPassword = cathAsyncErrors(async (req, res, next) => {
   user.passwordResetExpires = undefined;
 
   await user.save();
-  const token = makeToken(user._id);
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  makeTokenAndSend(user, res, 200);
 });
 exports.updatePassword = cathAsyncErrors(async (req, res, next) => {
   const { email, password, newPassword, newPasswordConfirm } = req.body;
@@ -174,9 +163,5 @@ exports.updatePassword = cathAsyncErrors(async (req, res, next) => {
   user.passwordChangedAt = Date.now() - 10000;
   await user.save();
   //Make Token
-  const token = makeToken(user._id);
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  makeTokenAndSend(user, res, 200);
 });
