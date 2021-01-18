@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const userRouter = require("./routes/userRouter");
 const tourRouter = require("./routes/tourRouter");
+const reviewRouter = require("./routes/reviewRouter");
 const AppError = require("./utils/AppError");
 const globalErrorController = require("./controllers/globalErrorController");
 const rateLimit = require("express-rate-limit");
@@ -55,6 +56,7 @@ app.use((req, res, next) => {
 //3) Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/reviews", reviewRouter);
 //4)Handling With Unhandled Routes
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server.`, 404)); //Pass "err" to the next middlware function
