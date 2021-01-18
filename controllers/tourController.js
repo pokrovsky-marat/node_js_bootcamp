@@ -18,7 +18,10 @@ exports.getTours = cathAsyncErrors(async (req, res, next) => {
 });
 
 exports.getTour = cathAsyncErrors(async (req, res, next) => {
-  let tour = await Tour.findById(req.params.id);
+  let tour = await Tour.findById(req.params.id)/* .populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt",
+  }); */
   if (!tour) {
     return next(
       new AppError(`No tour found with such ID <${req.params.id}>`, 404)
