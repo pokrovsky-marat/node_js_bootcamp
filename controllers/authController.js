@@ -89,7 +89,7 @@ exports.protect = cathAsyncErrors(async (req, res, next) => {
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return next(new AppError("Only leads and admins can delete tours", 403));
+      return next(new AppError(`Only ${roles} can to do that `, 403));
     }
     next();
   };
