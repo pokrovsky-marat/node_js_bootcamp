@@ -30,8 +30,10 @@ const reviewSchema = new mongoose.Schema(
 );
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
-    path: "tour user",
-    select: "-__v",
+    // path: "tour user",
+    path: "user", //To avoid nesting when populating tour>reviews, don't populate <tour>
+    // select: "-__v",
+    select: " name email "
   });
   next();
 });
