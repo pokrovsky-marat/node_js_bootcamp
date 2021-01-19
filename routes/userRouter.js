@@ -15,7 +15,9 @@ router
 router
   .route("/deleteMe")
   .delete(authController.protect, userController.deleteMe);
-
+router
+  .route("/getMe")
+  .get(authController.protect, userController.getMe, userController.getUser);
 router
   .route("/")
   .get(userController.getAllUsers)
