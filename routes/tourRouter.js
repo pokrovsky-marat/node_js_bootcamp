@@ -1,9 +1,12 @@
 const express = require("express");
 const tourController = require("./../controllers/tourController");
 const authController = require("./../controllers/authController");
-const reviewController = require("./../controllers/reviewController");
+const reviewRouter = require("./reviewRouter");
 
 const router = express.Router();
+//To avoid duplicating code, passed work with 'reviews' to 'reviewRouter'
+router.use("/:tourId/reviews", reviewRouter);
+
 router.route("/monthly-plan/:year").get(tourController.getMonthlyPlan);
 router.route("/tour-stats").get(tourController.getTourStats);
 router
@@ -23,11 +26,4 @@ router
   )
   .get(tourController.getTour);
 
-router
-  .route("/:tourId/reviews")
-  .post(
-    authController.protect,
-    authController.restrictTo("user"),
-    reviewController.createReview
-  );
 module.exports = router;
