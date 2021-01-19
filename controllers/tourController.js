@@ -30,27 +30,8 @@ exports.getTour = cathAsyncErrors(async (req, res, next) => {
   res.status(200).json({ status: "success", data: { tour } });
 });
 
-exports.createTour = cathAsyncErrors(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
-  res.status(201).json({
-    status: "success",
-    data: { tour: newTour },
-  });
-});
-
-exports.updateTour = cathAsyncErrors(async (req, res, next) => {
-  let tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!tour) {
-    return next(
-      new AppError(`No tour found with such ID <${req.params.id}>`, 404)
-    );
-  }
-  res.status(200).json({ status: "success", data: { tour } });
-});
-
+exports.createTour = factory.createOne(Tour);
+exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
 /* exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
   let tour = await Tour.findByIdAndDelete(req.params.id);
