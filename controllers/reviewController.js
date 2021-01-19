@@ -22,7 +22,10 @@ exports.getReview = cathAsyncErrors(async (req, res, next) => {
   res.status(200).json({ status: "success", data: { review } });
 });
 exports.getReviews = cathAsyncErrors(async (req, res, next) => {
-  let reviews = await Review.find();
+  let options = {};
+  //Find reviews by Tour
+  if (req.params.tourId) options = { tour: req.params.tourId };
+  let reviews = await Review.find(options);
   if (!reviews) {
     return next(new AppError(`No reviews found `, 404));
   }
