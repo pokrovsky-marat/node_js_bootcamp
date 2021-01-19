@@ -1,6 +1,7 @@
 const AppError = require("./../utils/AppError");
 const User = require("./../models/userModel");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
+const factory = require("./handlerFactory");
 
 exports.getAllUsers = cathAsyncErrors(async (req, res, next) => {
   const users = await User.find();
@@ -53,8 +54,4 @@ exports.updateUser = (req, res) => {
     .status(500)
     .json({ status: "error", message: "This route has not yet defined" });
 };
-exports.deleteUser = (req, res) => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route has not yet defined" });
-};
+exports.deleteUser = factory.deleteOne(User);

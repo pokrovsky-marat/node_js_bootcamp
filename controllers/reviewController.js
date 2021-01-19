@@ -1,6 +1,7 @@
 const Review = require("../models/reviewModel");
 const cathAsyncErrors = require("../utils/cathAsyncErrors");
 const AppError = require("../utils/AppError");
+const factory = require("./handlerFactory");
 
 exports.createReview = cathAsyncErrors(async (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;
@@ -33,3 +34,4 @@ exports.getReviews = cathAsyncErrors(async (req, res, next) => {
     .status(200)
     .json({ status: "success", results: reviews.length, data: { reviews } });
 });
+exports.deleteReview = factory.deleteOne(Review);

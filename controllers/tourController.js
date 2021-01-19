@@ -2,6 +2,7 @@ const AppError = require("../utils/AppError");
 const Tour = require("./../models/tourModel");
 const ApiFeatures = require("./../utils/ApiFeatures");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
+const factory = require("./handlerFactory");
 
 exports.topCheapTours = (req, res, next) => {
   req.query = { sort: "price", limit: "5" };
@@ -19,7 +20,7 @@ exports.getTours = cathAsyncErrors(async (req, res, next) => {
 
 exports.getTour = cathAsyncErrors(async (req, res, next) => {
   let tour = await Tour.findById(req.params.id).populate({
-    path: "reviews"
+    path: "reviews",
   });
   if (!tour) {
     return next(
@@ -50,7 +51,8 @@ exports.updateTour = cathAsyncErrors(async (req, res, next) => {
   res.status(200).json({ status: "success", data: { tour } });
 });
 
-exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
+exports.deleteTour = factory.deleteOne(Tour);
+/* exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
   let tour = await Tour.findByIdAndDelete(req.params.id);
   if (!tour) {
     return next(
@@ -60,7 +62,7 @@ exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
   res.status(204).json({
     status: "success",
   });
-});
+}); */
 
 exports.getTourStats = cathAsyncErrors(async (req, res, next) => {
   const stats = await Tour.aggregate([
