@@ -3,16 +3,6 @@ const User = require("./../models/userModel");
 const cathAsyncErrors = require("./../utils/cathAsyncErrors");
 const factory = require("./handlerFactory");
 
-exports.getAllUsers = cathAsyncErrors(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({
-    status: "success",
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
 exports.updateMe = cathAsyncErrors(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm) {
     return next(new AppError("This is not for password updates", 400));
@@ -39,11 +29,7 @@ exports.deleteMe = cathAsyncErrors(async (req, res, next) => {
     data: null,
   });
 });
-exports.getUser = (req, res) => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route has not yet defined" });
-};
+
 exports.createUser = (req, res) => {
   res
     .status(500)
@@ -51,3 +37,5 @@ exports.createUser = (req, res) => {
 };
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
