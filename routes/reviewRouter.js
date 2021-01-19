@@ -4,11 +4,10 @@ const authController = require("./../controllers/authController");
 
 //GET access to passed params from 'tourRouter', we have to specify {mergeParams:true}
 const router = express.Router({ mergeParams: true });
-
+router.use(authController.protect);
 router
   .route("/")
   .post(
-    authController.protect,
     authController.restrictTo("user"),
     reviewController.addUserAndTourToReqBody,
     reviewController.createReview
@@ -17,7 +16,13 @@ router
 router
   .route("/:id")
   .get(reviewController.getReview)
-  .delete(reviewController.deleteReview)
-  .patch(reviewController.updateReview);
+  .delete(
+    reviewController.restrictTo("user", "admin"),
+    reviewController.deleteReview
+  )
+  .patch(
+    reviewController.restrictTo("user", "admin"),
+    reviewController.updateReview
+  );
 
 module.exports = router;
