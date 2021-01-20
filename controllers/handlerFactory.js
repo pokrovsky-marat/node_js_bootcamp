@@ -54,11 +54,12 @@ exports.getOne = (Model, populateOptions) =>
 exports.getAll = (Model) =>
   cathAsyncErrors(async (req, res, next) => {
     ////Next two lines only for, Find reviews by Tour
-    let options = {};    
+    let options = {};
     if (req.params.tourId) options = { tour: req.params.tourId };
 
     let features = new ApiFeatures(Model.find(options), req.query);
     features.filter().sort().select().paginate();
+    // let docs = await features.query.explain();//To see stats
     let docs = await features.query;
     res
       .status(200)
