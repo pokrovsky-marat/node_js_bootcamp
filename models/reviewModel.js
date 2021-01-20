@@ -38,10 +38,7 @@ reviewSchema.pre(/^find/, function (next) {
   });
   next();
 });
-reviewSchema.post("save", function () {
-  //this.constructor === Review
-  this.constructor.calcAverageRatings(this.tour);
-});
+
 reviewSchema.statics.calcAverageRatings = async function (tourID) {
   const stats = await this.aggregate([
     {
@@ -56,10 +53,33 @@ reviewSchema.statics.calcAverageRatings = async function (tourID) {
       },
     },
   ]);
-  await Tour.findByIdAndUpdate(tourID, {
-    ratingsAverage: stats[0].ratingsAverage,
-    ratingsQuantity:stats[0].numReviews,
-  });
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourID, {
+      ratingsAverage: stats[0].ratingsAverage,
+      ratingsQuantity: stats[0].numReviews,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourID, {
+      ratingsAverage: 4.5,
+      ratingsQuantity: 0,
+    });
+  }
 };
+reviewSchema.post("save", function () {
+  //this.constructor === Review
+  this.constructor.calcAverageRatings(this.tour);
+});
+//To implement .calcAverageRatings() for delete and update reviews
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  //to get document and save it to .currentReview property
+  this.currentReview = await this.findOne();
+  console.log(this.currentReview);
+  next();
+});
+reviewSchema.post(/^findOneAnd/, async function () {
+  await this.currentReview.constructor.calcAverageRatings(
+    this.currentReview.tour
+  );
+});
 const Review = new mongoose.model("Review", reviewSchema);
 module.exports = Review;
