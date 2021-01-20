@@ -16,17 +16,7 @@ exports.getTour = factory.getOne(Tour, {
 exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
-/* exports.deleteTour = cathAsyncErrors(async (req, res, next) => {
-  let tour = await Tour.findByIdAndDelete(req.params.id);
-  if (!tour) {
-    return next(
-      new AppError(`No tour found with such ID <${req.params.id}>`, 404)
-    );
-  }
-  res.status(204).json({
-    status: "success",
-  });
-}); */
+
 
 exports.getTourStats = cathAsyncErrors(async (req, res, next) => {
   const stats = await Tour.aggregate([

@@ -3,7 +3,6 @@ const cathAsyncErrors = require("../utils/cathAsyncErrors");
 const AppError = require("../utils/AppError");
 const factory = require("./handlerFactory");
 
-//getReview
 
 exports.getReviews = factory.getAll(Review);
 exports.updateReview = factory.updateOne(Review);

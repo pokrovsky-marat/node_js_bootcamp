@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Tour = require("./tourModel");
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -33,9 +34,32 @@ reviewSchema.pre(/^find/, function (next) {
     // path: "tour user",
     path: "user", //To avoid nesting when populating tour>reviews, don't populate <tour>
     // select: "-__v",
-    select: " name email "
+    select: " name email ",
   });
   next();
 });
+reviewSchema.post("save", function () {
+  //this.constructor === Review
+  this.constructor.calcAverageRatings(this.tour);
+});
+reviewSchema.statics.calcAverageRatings = async function (tourID) {
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourID },
+    },
+    {
+      $group: {
+        // _id: "$tour", For this case doesn't matter null or "$tour"
+        _id: null,
+        numReviews: { $sum: 1 },
+        ratingsAverage: { $avg: "$rating" },
+      },
+    },
+  ]);
+  await Tour.findByIdAndUpdate(tourID, {
+    ratingsAverage: stats[0].ratingsAverage,
+    ratingsQuantity:stats[0].numReviews,
+  });
+};
 const Review = new mongoose.model("Review", reviewSchema);
 module.exports = Review;
