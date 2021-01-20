@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
+
 userSchema.pre("save", function (next) {
   // if we can't changed password field, quit from function
   if (!this.isModified("password")) {
