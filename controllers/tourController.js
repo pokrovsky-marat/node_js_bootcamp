@@ -17,7 +17,6 @@ exports.createTour = factory.createOne(Tour);
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
 
-
 exports.getTourStats = cathAsyncErrors(async (req, res, next) => {
   const stats = await Tour.aggregate([
     {
@@ -75,4 +74,25 @@ exports.getMonthlyPlan = cathAsyncErrors(async (req, res, next) => {
     { $limit: 50 }, //Show only 50 documents
   ]);
   res.status(200).json({ status: "success", data: { stats } });
+});
+
+//  '/tours-within/:distance/center/:latlng/unit/:unit'
+exports.getToursWithin = cathAsyncErrors(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+  const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+  if (!lat || !lng) {
+    next(new AppError("Provide correct request data", 404));
+  }
+
+  console.log(lat, lng, distance, unit, radius);
+  // {startLocation: {$geoWithin: { $centerSphere: [ [ -118.82162487907975, 34.02015811346436 ], 0.021642242501607737 ]}},$or: []}
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+  res.status(200).json({
+    status: "success",
+    results: tours.length,
+    data: { data: tours },
+  });
 });
