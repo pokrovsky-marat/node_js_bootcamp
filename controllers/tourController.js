@@ -86,7 +86,6 @@ exports.getToursWithin = cathAsyncErrors(async (req, res, next) => {
   }
 
   console.log(lat, lng, distance, unit, radius);
-  // {startLocation: {$geoWithin: { $centerSphere: [ [ -118.82162487907975, 34.02015811346436 ], 0.021642242501607737 ]}},$or: []}
   const tours = await Tour.find({
     startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
   });
@@ -94,5 +93,37 @@ exports.getToursWithin = cathAsyncErrors(async (req, res, next) => {
     status: "success",
     results: tours.length,
     data: { data: tours },
+  });
+});
+
+exports.getDistances = cathAsyncErrors(async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+  const multiplier = unit === "mi" ? 0.000621371 : 0.001;
+  if (!lat || !lng) {
+    next(new AppError("Provide correct request data", 404));
+  }
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: "Point",
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: "distance",
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: { data: distances },
   });
 });

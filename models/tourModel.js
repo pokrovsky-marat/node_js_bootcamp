@@ -144,12 +144,12 @@ tourSchema.post(/^find/, function (docs, next) {
   console.log(`------ Query takes ${Date.now() - this.start} ms.   `);
   next();
 });
-//Aggregation  Middleware
-tourSchema.pre("aggregate", function (next) {
-  console.log("---------------------------");
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//Aggregation  Middleware don't work with geo aggregate
+// tourSchema.pre("aggregate", function (next) {
+//   console.log("---------------------------");
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 
-  next();
-});
+//   next();
+// });
 const Tour = new mongoose.model("Tour", tourSchema);
 module.exports = Tour;
